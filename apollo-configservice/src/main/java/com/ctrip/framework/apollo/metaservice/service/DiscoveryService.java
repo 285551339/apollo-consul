@@ -2,9 +2,11 @@ package com.ctrip.framework.apollo.metaservice.service;
 
 import com.ctrip.framework.apollo.core.ServiceNameConsts;
 import com.ctrip.framework.apollo.tracer.Tracer;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
+import com.ecwid.consul.v1.Response;
+import com.ecwid.consul.v1.health.model.HealthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -13,33 +15,40 @@ import java.util.List;
 @Service
 public class DiscoveryService {
 
-  private final EurekaClient eurekaClient;
+  @Autowired
+  private ConsulClient consulClient;
 
-  public DiscoveryService(final EurekaClient eurekaClient) {
-    this.eurekaClient = eurekaClient;
+
+  public List<HealthService> getConfigServiceInstances() {
+    // Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_CONFIGSERVICE);
+    Response<List<HealthService>> healthyServices = consulClient
+            .getHealthServices(ServiceNameConsts.APOLLO_CONFIGSERVICE, true, QueryParams.DEFAULT);
+    List<HealthService> result = healthyServices.getValue();
+    if (healthyServices == null) {
+      Tracer.logEvent("Apollo.ConsulDiscovery.NotFound", ServiceNameConsts.APOLLO_CONFIGSERVICE);
+    }
+    return result != null ? result : Collections.emptyList();
   }
 
-  public List<InstanceInfo> getConfigServiceInstances() {
-    Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_CONFIGSERVICE);
-    if (application == null) {
-      Tracer.logEvent("Apollo.EurekaDiscovery.NotFound", ServiceNameConsts.APOLLO_CONFIGSERVICE);
+  public List<HealthService> getMetaServiceInstances() {
+    //Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_METASERVICE);
+    Response<List<HealthService>> healthyServices = consulClient
+            .getHealthServices(ServiceNameConsts.APOLLO_METASERVICE, true, QueryParams.DEFAULT);
+    List<HealthService> result = healthyServices.getValue();
+    if (healthyServices == null) {
+      Tracer.logEvent("Apollo.ConsulDiscovery.NotFound", ServiceNameConsts.APOLLO_CONFIGSERVICE);
     }
-    return application != null ? application.getInstances() : Collections.emptyList();
+    return result != null ? result : Collections.emptyList();
   }
 
-  public List<InstanceInfo> getMetaServiceInstances() {
-    Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_METASERVICE);
-    if (application == null) {
-      Tracer.logEvent("Apollo.EurekaDiscovery.NotFound", ServiceNameConsts.APOLLO_METASERVICE);
+  public List<HealthService> getAdminServiceInstances() {
+    //Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_ADMINSERVICE);
+    Response<List<HealthService>> healthyServices = consulClient
+            .getHealthServices(ServiceNameConsts.APOLLO_ADMINSERVICE, true, QueryParams.DEFAULT);
+    List<HealthService> result = healthyServices.getValue();
+    if (healthyServices == null) {
+      Tracer.logEvent("Apollo.ConsulDiscovery.NotFound", ServiceNameConsts.APOLLO_CONFIGSERVICE);
     }
-    return application != null ? application.getInstances() : Collections.emptyList();
-  }
-
-  public List<InstanceInfo> getAdminServiceInstances() {
-    Application application = eurekaClient.getApplication(ServiceNameConsts.APOLLO_ADMINSERVICE);
-    if (application == null) {
-      Tracer.logEvent("Apollo.EurekaDiscovery.NotFound", ServiceNameConsts.APOLLO_ADMINSERVICE);
-    }
-    return application != null ? application.getInstances() : Collections.emptyList();
+    return result != null ? result : Collections.emptyList();
   }
 }

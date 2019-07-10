@@ -1,20 +1,19 @@
-eureka:
-  instance:
-    hostname: ${hostname:localhost}
-    preferIpAddress: true
-    status-page-url-path: /info
-    health-check-url-path: /health
-  server:
-    peerEurekaNodesUpdateIntervalMs: 60000
-    enableSelfPreservation: false
-  client:
-    serviceUrl:
-      # This setting will be overridden by eureka.service.url setting from ApolloConfigDB.ServerConfig or System Property
-      # see com.ctrip.framework.apollo.biz.eureka.ApolloEurekaClientConfig
-      defaultZone: http://${eureka.instance.hostname}:8080/eureka/
-    healthcheck:
-      enabled: true
-    eurekaServiceUrlPollIntervalSeconds: 60
+spring:
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:10.0.0.233}
+      port: ${CONSUL_PORT:8500}
+      discovery: #健康检查
+        healthCheckPath: /consul/health
+        healthCheckInterval: 15s
+        prefer-ip-address: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}-${server.port}
+        retry:
+          initial-interval: 15000
+          max-attempts: 10
+          max-interval: 600000
+          multiplier: 2
 
 management:
   health:
