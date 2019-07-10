@@ -301,4 +301,6 @@ The project is licensed under the [Apache 2 license](https://github.com/ctripcor
 
 # Stargazers over time
 
+#当前版本基于1.1.4版本修改
+
 [![Stargazers over time](https://starcharts.herokuapp.com/ctripcorp/apollo.svg)](https://starcharts.herokuapp.com/ctripcorp/apollo)
